@@ -1,3 +1,18 @@
+param([String]$FileInputSettings)
+
+function GetSettings {
+  param([String] $settingsFile)
+  $vals = (Get-Content $settingsFile)
+  $settings=@("")*5
+  $i=0
+
+  foreach($v in $vals){
+    $line = $v.split("|")
+    $settings[$i]=$line[1]
+    $i++
+  }
+  return $settings
+}
 function MyTestFunc {
   param([parameter(Mandatory=$true)][string]$str)
   return $str.ToUpper()    
@@ -21,7 +36,6 @@ function ProcessFile {
     Add-content $LogFile -Value "$((Get-Date).ToString("yyyy/MM/dd HH:mm:ss")) Copy to Processed folder: $($newFilePath)"
     copy-item $source $newFilePath -Force
     remove-item $source
-    #$global:isLocked = $true
 } 
 function Test-FileLock {
   param (
@@ -55,15 +69,21 @@ function Test-FileLock {
 $desktop = [Environment]::GetFolderPath('Desktop')
 
 # specify the path to the folder you want to monitor:
-$ProductTypeId = "NIR2_OSG"
-$Path = "C:\temp\Bruker\data\Upgraded_Products(UP)"
-$Destination = "\\file183\SampleManager\IM-DATA\OSG\Lab_Instruments\NIR2\In"
-$Logs = "C:\temp\filetransfer\log\Upgraded_Products(UP)"
-$LogFile = [System.IO.Path]::Combine($Logs, $ProductTypeId) + ".log"
-$Processed = "C:\temp\filetransfer\processed\Upgraded_Products(UP)"
+#$ProductTypeId = "NIR2_OSG"
+#$Path = "C:\temp\Bruker\data\Upgraded_Products(UP)"
+#$Destination = "\\file183\SampleManager\IM-DATA\OSG\Lab_Instruments\NIR2\In"
+#$Logs = "C:\temp\filetransfer\log\Upgraded_Products(UP)"
+#$LogFile = [System.IO.Path]::Combine($Logs, $ProductTypeId) + ".log"
+#$Processed = "C:\temp\filetransfer\processed\Upgraded_Products(UP)"
+$settings = GetSettings($FileInputSettings)
 
-$val = MyTestFunc $Destination
-write-host "Before: $Destination after: $val"
+$ProductTypeId = $settings[0].trim()
+$Path = $settings[1].trim()
+$Destination = $settings[2].trim()
+$Logs = $settings[3].trim()
+$LogFile = [System.IO.Path]::Combine($Logs, $ProductTypeId) + ".log"
+$Processed = $settings[4].trim()
+
 
 # Check for file lock
 $global:isLocked = $true
